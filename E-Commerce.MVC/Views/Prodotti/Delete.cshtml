@@ -1,0 +1,40 @@
+﻿@model ProdottoViewModel
+<form method="post">
+    <p>Sei sicuro di voler eliminare il prodotto @Model.Codice - @Model.Descrizione ?</p>
+
+    <div class="form-group">
+        <label asp-for="Codice"></label>
+        <input asp-for="Codice" class="form-control" readonly />
+        <span asp-validation-for="Codice" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Tipologia"></label>
+        <input asp-for="Tipologia" class="form-control" readonly />
+        <span asp-validation-for="Tipologia" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Descrizione"></label>
+        <input asp-for="Descrizione" class="form-control" readonly />
+        <span asp-validation-for="Descrizione" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="PrezzoFornitore"></label>
+        <input asp-for="PrezzoFornitore" class="form-control" readonly />
+        <span asp-validation-for="PrezzoFornitore" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group">
+        <label asp-for="PrezzoPubblico"></label>
+        <input asp-for="PrezzoPubblico" class="form-control" readonly />
+        <span asp-validation-for="PrezzoPubblico" class="text-danger"></span>
+    </div>
+
+    <input type="submit" value="Conferma eliminazione" class="tbn btn-danger" />
+    <a class="btn btn-primary" asp-controller="Corsi" asp-action="Index" role="button">Annulla</a>
+</form>
+© 2021 GitHub, Inc.
+Terms
