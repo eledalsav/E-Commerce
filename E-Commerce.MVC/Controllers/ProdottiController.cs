@@ -1,6 +1,8 @@
 ﻿using E_Commerce.Core;
 using E_Commerce.MVC.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,8 @@ using System.Threading.Tasks;
 namespace E_Commerce.MVC.Controllers
 {
     public class ProdottiController : Controller
-    {
+    
+        {
         private readonly IBusinessLayer BL;
 
         public ProdottiController(IBusinessLayer bl)
@@ -17,98 +20,104 @@ namespace E_Commerce.MVC.Controllers
             BL = bl;
         }
 
-        //CRUD su Prodotto
 
-
-        //url: https...../Prodotti
-        [HttpGet]
         public IActionResult Index()
         {
-            var Prodotti = BL.GetAllProdotti();
+            var prodotti = BL.GetAllProdotti();
 
-            List<ProdottoViewModel> ProdottiViewModel = new List<ProdottoViewModel>();
+            List<ProdottoViewModel> prodottiViewModel = new List<ProdottoViewModel>();
 
-            foreach (var item in Prodotti)
+            foreach (var item in prodotti)
             {
-                ProdottiViewModel.Add(item.ToProdottoViewModel());
+                prodottiViewModel.Add(item.ToProdottoViewModel());
             }
-
-            return View(ProdottiViewModel);
+            return View(prodottiViewModel);
         }
 
-
-        //url: https...../Prodotti/Details/C-01
-
-        [HttpGet("Prodotti/Details/{codice}")]
-        //[HttpGet] // [HttpGet ("Prodotti/Details/{id}")]
-        public IActionResult Details(string codice)
+        public IActionResult Details(string id)
         {
-            var Prodotto = BL.GetAllProdotti().FirstOrDefault(p => p.Codice == codice);
+            var prodotto = BL.GetAllProdotti().FirstOrDefault(p => p.Codice == id);
+            var prodottoViewModel = prodotto.ToProdottoViewModel();
 
-            var ProdottoViewModel = Prodotto.ToProdottoViewModel();
-
-            return View(ProdottoViewModel);
-
+            return View(prodottoViewModel);
         }
 
+        //add
+        [Authorize(Policy = "Adm")] //non solo chiede il login/autenticazione ma richiede che il ruolo sia Administrator
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
+        [Authorize(Policy = "Adm")] //non solo chiede il login/autenticazione ma richiede che il ruolo sia Administrator
         [HttpPost]
-        public IActionResult Create(ProdottoViewModel ProdottoViewModel)
+        public IActionResult Create(ProdottoViewModel prodottoViewModel)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid) //se la validazione è andata a buon fine, aggiungo alla lista e torno alla Index
             {
-                var Prodotto = ProdottoViewModel.ToProdotto();
-                BL.InserisciNuovoProdotto(Prodotto);
-                return RedirectToAction(nameof(Index));
+                BL.InserisciNuovoProdotto(prodottoViewModel.ToProdotto());
+                return RedirectToAction(nameof(Index)); //qui mi rimandi alla index
             }
-            return View(ProdottoViewModel);
+            LoadViewBag();
+            return View(prodottoViewModel); //se non va a buon fine, ritorno 
         }
 
+        //Edit
+        [Authorize(Policy = "Adm")] //non solo chiede il login/autenticazione ma richiede che il ruolo sia Administrator
         [HttpGet]
         public IActionResult Edit(string id)
         {
-            var Prodotto = BL.GetAllProdotti().FirstOrDefault(p=>p.Codice == id);
-            var ProdottoViewModel = Prodotto.ToProdottoViewModel();
-            return View(ProdottoViewModel);
+            var prodotto = BL.GetAllProdotti().FirstOrDefault(p => p.Codice == id);
+            var prodottoViewModel = prodotto.ToProdottoViewModel();
+            return View(prodottoViewModel);
         }
 
         [HttpPost]
-        public IActionResult Edit(ProdottoViewModel ProdottoViewModel)
+        [Authorize(Policy = "Adm")] //non solo chiede il login/autenticazione ma richiede che il ruolo sia Administrator
+        public IActionResult Edit(ProdottoViewModel prodottoViewModel)
         {
-            if (ModelState.IsValid)
+            var prodotto = prodottoViewModel.ToProdotto();
+
+            if (ModelState.IsValid) //se la validazione è andata a buon fine, aggiungo alla lista e torno alla Index
             {
-                var Prodotto = ProdottoViewModel.ToProdotto();
-                BL.ModificaProdotto(Prodotto.Codice, Prodotto.Tipologia, Prodotto.Descrizione, Prodotto.PrezzoFornitore, Prodotto.PrezzoPubblico);
-                return RedirectToAction(nameof(Index));
+                BL.ModificaProdotto(prodotto.Codice, prodotto.Tipologia, prodotto.Descrizione, prodotto.PrezzoFornitore, prodotto.PrezzoPubblico);
+                return RedirectToAction(nameof(Index)); //qui mi rimandi alla index
             }
-            return View(ProdottoViewModel);
+            LoadViewBag();
+            return View(prodottoViewModel); //se non va a buon fine, ritorno 
         }
 
-        [HttpGet]
+        //Delete
+        [Authorize(Policy = "Adm")] //non solo chiede il login/autenticazione ma richiede che il ruolo sia Administrator
         public IActionResult Delete(string id)
         {
-            var Prodotto = BL.GetAllProdotti().FirstOrDefault(p=>p.Codice == id);
-            var ProdottoViewModel = Prodotto.ToProdottoViewModel();
-            return View(ProdottoViewModel);
+            var prodotto = BL.GetAllProdotti().FirstOrDefault(p => p.Codice == id);
+            var prodottoViewModel = prodotto.ToProdottoViewModel();
+            return View(prodottoViewModel);
         }
 
         [HttpPost]
-        public IActionResult Delete(ProdottoViewModel ProdottoViewModel)
+        [Authorize(Policy = "Adm")] //non solo chiede il login/autenticazione ma richiede che il ruolo sia Administrator
+        public IActionResult Delete(ProdottoViewModel prodottoViewModel)
         {
+            var prodotto = prodottoViewModel.ToProdotto();
+
             if (ModelState.IsValid)
             {
-
-                var Prodotto = ProdottoViewModel.ToProdotto();
-                BL.EliminaProdotto(Prodotto.Codice);
+                BL.EliminaProdotto(prodottoViewModel.Codice);
                 return RedirectToAction(nameof(Index));
-
             }
-            return View(ProdottoViewModel);
+            return View(prodottoViewModel);
+        }
+
+
+        private void LoadViewBag()
+        {
+            ViewBag.Tipologia = new SelectList(new[]{
+                new { Value="1", Text="Elettronica"},
+                new { Value="2", Text="Abbigliamento"},
+                new { Value="3", Text="Casalinghi"} }.OrderBy(x => x.Text), "Value", "Text");
         }
     }
 }

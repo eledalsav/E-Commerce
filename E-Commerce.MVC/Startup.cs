@@ -1,5 +1,8 @@
 using E_Commerce.Core;
+using E_Commerce.Core.InterfaceRepository;
 using E_Commerce.RepositoryEF;
+using E_Commerce.RepositoryEF.RepositoryEF;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -31,11 +34,23 @@ namespace E_Commerce.MVC
             services.AddScoped<IBusinessLayer, MainBusinessLayer>();
 
             services.AddScoped<IRepositoryProdotto, RepositoryProdottoEF>();
-
+            services.AddScoped<IRepositoryUtente, RepositoryUtentiEF>();
 
             services.AddDbContext<MasterContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("EFConnection"));
+            });
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(option =>
+                {
+                    option.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Utenti/Login");
+                    option.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Utenti/Forbidden");
+                });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Adm", policy => policy.RequireRole("Administrator"));
+                options.AddPolicy("User", policy => policy.RequireRole("User"));
             });
         }
 

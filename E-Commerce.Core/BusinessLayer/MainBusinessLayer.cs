@@ -1,4 +1,6 @@
-﻿using System;
+﻿using E_Commerce.Core.Entities;
+using E_Commerce.Core.InterfaceRepository;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +11,7 @@ namespace E_Commerce.Core
     public class MainBusinessLayer : IBusinessLayer
     {
         private readonly IRepositoryProdotto prodottiRepo;
-
+        private readonly IRepositoryUtente utentiRepo;
         public MainBusinessLayer(IRepositoryProdotto prodotti)
         {
             prodottiRepo = prodotti;
@@ -55,6 +57,15 @@ namespace E_Commerce.Core
             ProdottoEsistente.PrezzoPubblico = nuovoPrezzoPubblico;
             prodottiRepo.Update(ProdottoEsistente);
             return "Il Prodotto è stato modificato con successo";
+        }
+
+        public Utente GetAccount(string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return null;
+            }
+            return utentiRepo.GetByUsername(username);
         }
     }
 }
